@@ -1,0 +1,55 @@
+:root {
+  --bg: #0d0d0f;
+  --surface: #141418;
+  --surface2: #1c1c22;
+  --border: #2a2a35;
+  --accent: #e8c547;
+  --accent2: #7c6aff;
+  --text: #f0ede8;
+  --text-muted: #7a7888;
+  --text-dim: #4a4858;
+  --card-front: #16161c;
+  --card-back: #1a1428;
+  --success: #4ade80;
+  --danger: #f87171;
+  --radius: 16px;
+  --shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,106,255,0.12), transparent),
+    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(232,197,71,0.06), transparent);
+}
+
+::selection {
+  background: var(--accent2);
+  color: white;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
