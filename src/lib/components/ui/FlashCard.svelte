@@ -14,7 +14,6 @@
   import HanziWriter from 'hanzi-writer';
 
   import { get as getLodash } from 'lodash-es';
-  import { LoaderCircle, Speaker, Volume2 } from '@lucide/svelte';
   // ─────────────────────────────
   // STATE (Svelte 5 runes)
   // ─────────────────────────────
@@ -71,7 +70,7 @@
 
   let currentCard = $derived.by(() => activeCards?.[currentIndex] ?? null);
 
-  let progress = $derived.by(() =>
+  let progress = $derived(() =>
     activeCards.length
       ? Math.round(((currentIndex + 1) / activeCards.length) * 100)
       : 0
@@ -80,6 +79,7 @@
   let learnedCount = $derived.by(
     () => activeCards.filter((c) => learnedIds.has(c.id)).length
   );
+  console.log('🚀 ~ learnedCount:', learnedCount);
 
   // ─────────────────────────────
   // HANZI WRITER EFFECT
@@ -101,29 +101,18 @@
   // ─────────────────────────────
   // SPEECH
   // ─────────────────────────────
-  let isSpeaking = $state(false);
-  
   function speak(text: string = '你') {
-    console.log("🚀 ~ speak ~ text:", text)
-    speechSynthesis.cancel();
     const voices = speechSynthesis.getVoices();
 
     const cnVoice = voices.filter(
-      (v) => v.lang.includes('zh-CN') || v.lang.includes('cmn')
+      (v) => v.lang.includes('zh') || v.lang.includes('cmn')
     );
+
     if (!cnVoice.length) return;
 
     const randomVoice = cnVoice[Math.floor(Math.random() * cnVoice.length)];
 
     const u = new SpeechSynthesisUtterance(text);
-
-    u.onstart = () => {
-      isSpeaking = true;
-    };
-
-    u.onend = () => {
-      isSpeaking = false;
-    };
 
     if (randomVoice) {
       u.voice = randomVoice;
@@ -239,11 +228,6 @@
   onMount(() => {
     loadCards();
 
-  speechSynthesis.getVoices();
-
-  speechSynthesis.onvoiceschanged = () => {
-    const voices = speechSynthesis.getVoices();
-  };
     const saved = localStorage.getItem('fc_settings');
     if (!saved) return;
 
@@ -257,7 +241,7 @@
   });
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} />
 
 <main class="app">
   <!-- Header -->
@@ -376,15 +360,12 @@
 
       <!-- Card -->
       <div class="card-area">
-        <div
+        <button
           class="card"
-          role="button"
-          tabindex="0"
-          onclick={store.flip}
-          onkeydown={(e) => {
-            if (e.key === ' ') store.flip();
-          }}
           class:flipped={isFlipped}
+          class:learned={learnedIds.has(currentCard.id)}
+          onclick={store.flip}
+          aria-label="Lật thẻ"
         >
           <div class="card-inner">
             <div class="card-face card-front">
@@ -393,21 +374,6 @@
                 <span class="card-category">{currentCard.category}</span>
               {/if}
               <p class="card-text">{currentCard.front}</p>
-              <button
-                class="card-voice"
-                onclick={(e: any) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  speak(currentCard.front[0]);
-                }}
-              > 
-               {#if isSpeaking}
-                  <LoaderCircle size="16" class="animate-spin" />
-                {:else}
-                  <Volume2 size="16"/>
-                {/if}
-              </button>
-              <div bind:this={el}></div>
               {#if currentCard.hint}
                 <div class="card-hint">💡 {currentCard.hint}</div>
               {/if}
@@ -417,9 +383,9 @@
               <div class="card-badge back">Trả lời</div>
               <p class="card-text">{currentCard.back}</p>
               <div class="flip-cue">Nhấn để lật ↩</div>
-            </div> 
+            </div>
           </div>
-        </div>
+        </button>
 
         <!-- Card actions -->
         <div class="card-actions">
@@ -465,6 +431,7 @@
             <div class="card-comment-item">{item}</div>
           {/each}
         </div>
+        <button onclick={() => speak()}> Speak </button>
       </div>
     {/if}
   </div>
@@ -586,14 +553,6 @@
     flex-direction: column;
   }
 
-    .card-voice{
-      padding: 12px 16px;
-      border-radius: 8px;
-      border : 1px solid rgb(255, 211, 153);
-    }
-    .card-voice:hover{
-      transform: scale(1.2);
-    }
   /* ── Header ── */
   header {
     display: flex;

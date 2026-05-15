@@ -1,7 +1,6 @@
 <script lang="ts">
-  export const ssr = false;
-  export const prerender = true;
+  import './layout.css';
   import '../app.css';
 </script>
 
-<slot />
+<slot></slot>
