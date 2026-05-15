@@ -20,12 +20,12 @@ function createFlashcardStore() {
     if (savedLearned) learned.set(new Set(JSON.parse(savedLearned)));
   }
 
-  starred.subscribe(val => {
+  starred.subscribe((val) => {
     if (typeof window !== 'undefined')
       localStorage.setItem('fc_starred', JSON.stringify([...val]));
   });
 
-  learned.subscribe(val => {
+  learned.subscribe((val) => {
     if (typeof window !== 'undefined')
       localStorage.setItem('fc_learned', JSON.stringify([...val]));
   });
@@ -38,24 +38,31 @@ function createFlashcardStore() {
     learned,
     studyMode,
     filter,
-    flip: () => isFlipped.update(v => !v),
+    flip: () => {
+      isFlipped.update((v) => {
+        console.log('🚀 ~ createFlashcardStore ~ v:', v);
+        return !v;
+      });
+    },
     next: (activeCards: Flashcard[]) => {
       isFlipped.set(false);
-      currentIndex.update(i => (i + 1) % activeCards.length);
+      currentIndex.update((i) => (i + 1) % activeCards.length);
     },
     prev: (activeCards: Flashcard[]) => {
       isFlipped.set(false);
-      currentIndex.update(i => (i - 1 + activeCards.length) % activeCards.length);
+      currentIndex.update(
+        (i) => (i - 1 + activeCards.length) % activeCards.length
+      );
     },
     toggleStar: (id: string) => {
-      starred.update(s => {
+      starred.update((s) => {
         const ns = new Set(s);
         ns.has(id) ? ns.delete(id) : ns.add(id);
         return ns;
       });
     },
     markLearned: (id: string) => {
-      learned.update(l => {
+      learned.update((l) => {
         const nl = new Set(l);
         nl.has(id) ? nl.delete(id) : nl.add(id);
         return nl;
@@ -63,7 +70,7 @@ function createFlashcardStore() {
     },
     shuffle: (activeCards: Flashcard[]) => {
       const shuffled = [...activeCards].sort(() => Math.random() - 0.5);
-      cards.update(all => {
+      cards.update((all) => {
         // Replace subset
         return shuffled;
       });
@@ -73,7 +80,7 @@ function createFlashcardStore() {
     reset: () => {
       currentIndex.set(0);
       isFlipped.set(false);
-    }
+    },
   };
 }
 

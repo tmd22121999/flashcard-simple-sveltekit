@@ -1,7 +1,3 @@
-@import 'tailwindcss';
-/* @import '../node_modules/flowbite-svelte/dist/theme-selector/themes/default.css'; */
-@plugin 'flowbite/plugin';
-@custom-variant dark (&:where(.dark, .dark *));
 :root {
   --bg: #0d0d0f;
   --surface: #141418;
@@ -67,6 +63,3 @@ body {
   background: var(--border);
   border-radius: 3px;
 }
-
-@source '../node_modules/flowbite-svelte/dist';
-@source '../node_modules/flowbite-svelte-icons/dist';
