@@ -1,3 +1,7 @@
+@import 'tailwindcss';
+@import '../node_modules/flowbite-svelte/dist/theme-selector/themes/default.css';
+@plugin 'flowbite/plugin';
+@custom-variant dark (&:where(.dark, .dark *));
 :root {
   --bg: #0d0d0f;
   --surface: #141418;
@@ -13,10 +17,12 @@
   --success: #4ade80;
   --danger: #f87171;
   --radius: 16px;
-  --shadow: 0 20px 60px rgba(0,0,0,0.6);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -34,8 +40,16 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,106,255,0.12), transparent),
-    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(232,197,71,0.06), transparent);
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(124, 106, 255, 0.12),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 90% 80%,
+      rgba(232, 197, 71, 0.06),
+      transparent
+    );
 }
 
 ::selection {
@@ -53,3 +67,6 @@ body {
   background: var(--border);
   border-radius: 3px;
 }
+
+@source '../node_modules/flowbite-svelte/dist';
+@source '../node_modules/flowbite-svelte-icons/dist';
