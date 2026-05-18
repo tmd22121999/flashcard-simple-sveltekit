@@ -14,7 +14,8 @@
   import HanziWriter from 'hanzi-writer';
 
   import { get as getLodash } from 'lodash-es';
-  import { LoaderCircle, Speaker, Volume2 } from '@lucide/svelte';
+  import { BugPlay, LoaderCircle, Speaker, Volume2 } from '@lucide/svelte';
+  import { cards } from '$lib/data';
   // ─────────────────────────────
   // STATE (Svelte 5 runes)
   // ─────────────────────────────
@@ -26,7 +27,7 @@
   let error = $state('');
   let showSettings = $state(false);
 
-  let sheetMode = $state<'api' | 'csv' | 'sample'>('api');
+  let sheetMode = $state<'api' | 'csv' | 'sample'>('sample');
   let spreadsheetId = $state('');
   let apiKey = $state('');
   let sheetName = $state('flashcards');
@@ -85,18 +86,32 @@
   // HANZI WRITER EFFECT
   // ─────────────────────────────
   let el = $state<HTMLDivElement | null>(null);
+  let writers: HanziWriter[] = [];
 
   $effect(() => {
     if (!el || !currentCard) return;
 
     el.innerHTML = '';
 
-    HanziWriter.create(el, currentCard.front[0], {
+    [...currentCard?.s].forEach((s) => {
+     
+    const writer = HanziWriter.create(el, s, {
       width: 200,
       height: 200,
       showOutline: true,
+        strokeAnimationSpeed: 1.5,
+        delayBetweenStrokes: 100,
+        delayBetweenLoops: 500,
     });
+
+    writers.push(writer);
+    })
   });
+  function playAll() {
+    writers.forEach((writer) => {
+      writer.animateCharacter();
+    });
+  }
 
   // ─────────────────────────────
   // SPEECH
@@ -104,8 +119,6 @@
   let isSpeaking = $state(false);
   
   function speak(text: string = '你') {
-    console.log("🚀 ~ speak ~ text:", text)
-    speechSynthesis.cancel();
     const voices = speechSynthesis.getVoices();
 
     const cnVoice = voices.filter(
@@ -130,6 +143,7 @@
       u.lang = randomVoice.lang;
     }
 
+    speechSynthesis.cancel();
     speechSynthesis.speak(u);
   }
 
@@ -148,7 +162,7 @@
 
     try {
       if (sheetMode === 'sample') {
-        allCards = SAMPLE_CARDS;
+        allCards = cards;
       } else if (sheetMode === 'api') {
         if (!spreadsheetId || !apiKey)
           throw new Error('Missing Spreadsheet ID or API Key');
@@ -373,7 +387,40 @@
           <div class="progress-fill" style="width: {progress}%"></div>
         </div>
       </div>
-
+      <div class="category-bar">
+              <!-- <p class="card-text">{currentCard.front}</p> -->
+              {#key currentCard.s}
+                <audio
+                  controls
+                  class="mini-audio"
+                  controlslist="nodownload noplaybackrate"
+                >
+                  <source src={`https://raw.githubusercontent.com/krmanik/HSK-3.0/refs/heads/main/New%20HSK%20(2025)/Audio/cmn-${currentCard.s}.mp3`} type="audio/mpeg">
+                </audio>
+              {/key}
+              <button
+                class="card-voice"
+                onclick={(e: any) => {  
+                  playAll();
+                }}
+              >  
+              <BugPlay size="16" />
+              </button>
+              <button
+                class="card-voice"
+                onclick={(e: any) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  speak(currentCard.s);
+                }}
+              > 
+               {#if isSpeaking}
+                  <LoaderCircle size="16" class="animate-spin" />
+                {:else}
+                  <Volume2 size="16"/>
+                {/if}
+              </button>
+              </div>
       <!-- Card -->
       <div class="card-area">
         <div
@@ -392,22 +439,7 @@
               {#if currentCard.category}
                 <span class="card-category">{currentCard.category}</span>
               {/if}
-              <p class="card-text">{currentCard.front}</p>
-              <button
-                class="card-voice"
-                onclick={(e: any) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  speak(currentCard.front[0]);
-                }}
-              > 
-               {#if isSpeaking}
-                  <LoaderCircle size="16" class="animate-spin" />
-                {:else}
-                  <Volume2 size="16"/>
-                {/if}
-              </button>
-              <div bind:this={el}></div>
+              <div class="category-bar" bind:this={el}></div>
               {#if currentCard.hint}
                 <div class="card-hint">💡 {currentCard.hint}</div>
               {/if}
@@ -416,6 +448,11 @@
             <div class="card-face card-back">
               <div class="card-badge back">Trả lời</div>
               <p class="card-text">{currentCard.back}</p>
+              {#if currentCard.f}
+                {#each currentCard.f as f}
+                  <p class="card-text">{f?.m?.join(", ")}</p>
+                {/each}
+              {/if}
               <div class="flip-cue">Nhấn để lật ↩</div>
             </div> 
           </div>
@@ -1187,6 +1224,26 @@
     border: 1px solid antiquewhite;
   }
 
+  .mini-audio {
+    width: 180px;
+    height: 32px;
+  }
+
+  /* Ẩn volume */
+  .mini-audio::-webkit-media-controls-volume-slider,
+  .mini-audio::-webkit-media-controls-mute-button {
+    display: none;
+  }
+
+  /* Ẩn fullscreen/download */
+  .mini-audio::-webkit-media-controls-fullscreen-button,
+  .mini-audio::-webkit-media-controls-overflow-button,
+  .mini-audio::-webkit-media-controls-download-button,
+  .mini-audio::-webkit-media-controls-timeline,
+  .mini-audio::-webkit-media-controls-overflow-button {
+    display: none;
+  }
+
   /* ── Responsive ── */
   @media (max-width: 640px) {
     header {
@@ -1214,5 +1271,6 @@
     .category-bar {
       padding: 10px 16px;
     }
+    
   }
 </style>
